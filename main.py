@@ -28,13 +28,10 @@ import matplotlib.pyplot as plt
 NREPLAY = 8
 NTIMESTEP = 20
 NEPISODE = 1000
-NCHANGE = 3
 RESET = True
 CONNECTION = torch.FloatTensor(np.zeros((4,4))).cuda()
 CONNECTION[[0,1,2,3],[1,2,3,0]] = 1
 NIN = CONNECTION.shape[0]
-PLOT = False
-GAMMA = 10
 # ------------------- auxiliary functions ---------------------
 
 
