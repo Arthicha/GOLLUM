@@ -196,14 +196,14 @@ for i in range(NEPISODE):
 
 		# update environment
 		joint_command = output.clone()
-		joint_command[:,[0,3,6,9,12,15]] = torch.clamp(joint_command[:,[0,3,6,9,12,15]],-0.3,0.3)
+		joint_command[:,[0,3,6,9,12,15]] = torch.clamp(joint_command[:,[0,3,6,9,12,15]],-1,1)
 		vrep.set_robot_joint(numpy(joint_command))
 		vrep.update()
 
 		# compute reward
 		pose = vrep.get_robot_pose()
 		reward = observation[0,0].item()*(pose[0]-prepose[0])
-		propose = deepcopy(pose)
+		prepose = deepcopy(pose)
 
 		# backpropagate output gradient
 		torch.sum(output).backward() 
