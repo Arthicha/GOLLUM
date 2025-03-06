@@ -28,7 +28,7 @@ import matplotlib.pyplot as plt
 NREPLAY = 8
 NTIMESTEP = 20
 NEPISODE = 1000
-RESET = True
+RESET = False
 CONNECTION = torch.FloatTensor(np.zeros((4,4))).cuda()
 CONNECTION[[0,1,2,3],[1,2,3,0]] = 1
 NIN = CONNECTION.shape[0]
@@ -159,7 +159,7 @@ for i in range(NEPISODE):
 	print('episode',i)
 
 	# ------------------- episode-wise reset ---------------------
-	observation[0,0] *= -1 if i%100 == 0 else 1
+	observation[0,0] *= -1 if i%300 == 0 else 1
 	output = sme.forward(observation)
 
 	if RESET: # reset the simulation/network
@@ -202,10 +202,14 @@ for i in range(NEPISODE):
 
 		# compute reward
 		pose = vrep.get_robot_pose()
-		reward = observation[0,0].item()*(pose[0]-prepose[0])
+		dx = pose[0]-prepose[0]
+		dy = pose[1]-prepose[1]
+		reward = observation[0,0].item()*(dx*np.cos(prepose[-1]) + dy*np.sin(prepose[-1])) 
+		#reward = observation[0,0].item()*(pose[0]-prepose[0])
 		prepose = deepcopy(pose)
 
 		# backpropagate output gradient
+		sme.zero_grad()
 		torch.sum(output).backward() 
 
 		# append experience replay
@@ -222,11 +226,11 @@ for i in range(NEPISODE):
 
 	# ------------------- new condition detection ---------------------
 	v_delta = torch.mean(compute_return(reward_replay.data()[[-1]])-compute_return(sme.vn(basis_replay.data()[[-1]])))
-	v_thresh = -torch.clamp(torch.mean(sme.vbn(basis_replay.data()[[-1]])),0.02,None)
+	v_thresh = -torch.clamp(torch.mean(sme.vbn(basis_replay.data()[[-1]])),0.01,None)
 
 	o_delta = torch.abs(torch.mean(observation_replay.data()[[-1]]-sme.on(basis_replay.data()[[-1]])))
-	o_thresh = torch.clamp(torch.mean(sme.obn(basis_replay.data()[[-1]])),0.02,None)
-
+	o_thresh = torch.clamp(torch.mean(sme.obn(basis_replay.data()[[-1]])),0.01,None)
+	print(v_delta, v_thresh)
 	if (v_delta > v_thresh) or torch.any(o_delta < o_thresh): 
 		# ------------------- update the network if being in the same condition ---------------------
 		vgd.update(basis_replay.data(),reward_replay.data())

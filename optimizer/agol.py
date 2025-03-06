@@ -61,21 +61,21 @@ class AddedGradientOnlineLearning(Optim):
 		std_advantage = torch.clamp(std_advantage,-3.0,3.0)
 		
 		update = (torch.abs(grads)*(weights-self.W))* std_advantage
-		update = torch.sum(update[:,:-ENDINGCLIP] , dim=[0,1])/torch.pow(self.__sigmas,2)
+		update = torch.sum(20*update[:,:-ENDINGCLIP] , dim=[0,1])/torch.pow(self.__sigmas,2)
 		dw = torch.clamp(self.__lr*0.1*1e-4*update,-self.__min_grad,self.__min_grad)
 		
 		dsigma = std_advantage*torch.abs(grads)*(torch.pow(weights-self.W,2)-torch.pow(self.__sigmas,2))/torch.pow(self.__sigmas,3)
-		dsigma = self.__lr*0.1*1e-4*torch.sum(dsigma[:,:-ENDINGCLIP],dim=[0,1])
+		dsigma = self.__lr*0.1*1e-5*torch.sum(dsigma[:,:-ENDINGCLIP],dim=[0,1])
 
 		with torch.no_grad():
 			self.W += (dw).detach()
 			self.__sigmas = torch.clamp(self.__sigmas + dsigma,self.__sigmamin,self.__sigmamax)
-
+		print('w',self.W[:,2])
 			
 	# -------------------- apply noise -----------------------
 
 	def wnoise(self):
-		self.dist = Normal(loc=self.W.detach()*0,scale=self.__sigma)
+		self.dist = Normal(loc=self.W.detach()*0,scale=self.__sigmas)
 		noise = self.dist.rsample()
 		return noise
 

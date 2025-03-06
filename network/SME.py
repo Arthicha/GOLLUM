@@ -144,6 +144,11 @@ class SequentialMotionExecutor(torchNet):
 		self.mn.Wn = self.mn.W + wnoise
 		self.pmn.Wn = self.pmn.W + pwnoise
 
+	def zero_grad(self):
+		with torch.no_grad():
+			self.mn.W.grad = None
+			self.mn.Wn.grad = None
+
 	# ---------------------- update   ------------------------
 
 	def reset(self):
