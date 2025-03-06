@@ -73,3 +73,5 @@ python main.py
 
 4. Enjoy! With a proper set of hyperparameters, the robot should start walking (forward/backward) within the first 40 episodes after switching the target, while successfully recall previous skills when switching back to the other target.
 
+Reference:
+Arthicha Srisuchinnawong, and Poramate Manoonpong (2025). Growable and Interpretable Neural Control with Online Continual Learning for Autonomous Lifelong Locomotion Learning Machines. International Journal of Robotics Research. (Accepted)
